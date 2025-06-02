@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS  # Add this
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})  # Allow localhost:3000
 load_dotenv()
 Base = declarative_base()
 engine = create_engine('sqlite:///data.db')
