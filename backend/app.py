@@ -1,16 +1,32 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
+Base = declarative_base()
+engine = create_engine('sqlite:///data.db')
+Session = sessionmaker(bind=engine)
+
+class Portfolio(Base):
+    __tablename__ = 'portfolio'
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String)
+    quantity = Column(Integer)
+    buy_price = Column(Float)
+    buy_date = Column(DateTime)
+
+Base.metadata.create_all(engine)
 
 def calculate_signals(data):
     data['SMA50'] = data['Close'].rolling(window=50).mean()
     data['SMA200'] = data['Close'].rolling(window=200).mean()
     data['Signal'] = 0
-    data.loc[data['SMA50'] > data['SMA200'], 'Signal'] = 1  # Buy
-    data.loc[data['SMA50'] < data['SMA200'], 'Signal'] = -1  # Sell
+    data.loc[data['SMA50'] > data['SMA200'], 'Signal'] = 1
+    data.loc[data['SMA50'] < data['SMA200'], 'Signal'] = -1
     return data
 
 @app.route('/api/stock/<symbol>')
@@ -43,6 +59,40 @@ def get_stock_data(symbol):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/portfolio', methods=['GET', 'POST'])
+def portfolio():
+    session = Session()
+    try:
+        if request.method == 'POST':
+            data = request.json
+            entry = Portfolio(
+                symbol=data['symbol'],
+                quantity=data['quantity'],
+                buy_price=data['buy_price'],
+                buy_date=datetime.now()
+            )
+            session.add(entry)
+            session.commit()
+            return jsonify({'message': 'Portfolio updated'})
+        else:
+            entries = session.query(Portfolio).all()
+            portfolio_data = [
+                {
+                    'id': e.id,
+                    'symbol': e.symbol,
+                    'quantity': e.quantity,
+                    'buy_price': e.buy_price,
+                    'buy_date': str(e.buy_date)
+                }
+                for e in entries
+            ]
+            return jsonify(portfolio_data)
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
