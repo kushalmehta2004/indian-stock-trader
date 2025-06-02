@@ -5,11 +5,19 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import smtplib
+from email.mime.text import MIMEText
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
+load_dotenv()
 Base = declarative_base()
 engine = create_engine('sqlite:///data.db')
 Session = sessionmaker(bind=engine)
+
+EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 class Portfolio(Base):
     __tablename__ = 'portfolio'
@@ -20,6 +28,18 @@ class Portfolio(Base):
     buy_date = Column(DateTime)
 
 Base.metadata.create_all(engine)
+
+def send_email(subject, body, to_email):
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = to_email
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+    except Exception as e:
+        print(f"Email error: {e}")
 
 def calculate_signals(data):
     data['SMA50'] = data['Close'].rolling(window=50).mean()
@@ -41,6 +61,12 @@ def get_stock_data(symbol):
 
         data = calculate_signals(data)
         latest_signal = 'Buy' if data['Signal'].iloc[-1] == 1 else 'Sell' if data['Signal'].iloc[-1] == -1 else 'Hold'
+        if latest_signal != 'Hold':
+            send_email(
+                f"{symbol} Signal",
+                f"{latest_signal} {symbol} at ₹{data['Close'].iloc[-1]:.2f}",
+                EMAIL_ADDRESS
+            )
 
         prices = [
             {
