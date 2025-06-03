@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import os
 from flask_cors import CORS
+import json
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
@@ -21,7 +22,6 @@ Session = sessionmaker(bind=engine)
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
-
 class Portfolio(Base):
     __tablename__ = 'portfolio'
     id = Column(Integer, primary_key=True)
@@ -30,9 +30,7 @@ class Portfolio(Base):
     buy_price = Column(Float)
     buy_date = Column(DateTime)
 
-
 Base.metadata.create_all(engine)
-
 
 def send_email(subject, body, to_email):
     try:
@@ -46,7 +44,6 @@ def send_email(subject, body, to_email):
     except Exception as e:
         print(f"Email error: {e}")
 
-
 def calculate_signals(data):
     data['SMA50'] = data['Close'].rolling(window=50).mean()
     data['SMA200'] = data['Close'].rolling(window=200).mean()
@@ -55,6 +52,14 @@ def calculate_signals(data):
     data.loc[data['SMA50'] < data['SMA200'], 'Signal'] = -1
     return data
 
+@app.route('/api/stocks')
+def get_stock_list():
+    try:
+        with open('stocks.json') as f:
+            stocks = json.load(f)
+        return jsonify(stocks)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/stock/<symbol>')
 def get_stock_data(symbol):
@@ -65,20 +70,16 @@ def get_stock_data(symbol):
         data = stock.history(start=start_date, end=end_date)
         if data.empty:
             return jsonify({'error': 'No data found for symbol'}), 404
-
+        
         data = calculate_signals(data)
-        latest_signal = (
-            'Buy' if data['Signal'].iloc[-1] == 1
-            else 'Sell' if data['Signal'].iloc[-1] == -1
-            else 'Hold'
-        )
+        latest_signal = 'Buy' if data['Signal'].iloc[-1] == 1 else 'Sell' if data['Signal'].iloc[-1] == -1 else 'Hold'
         if latest_signal != 'Hold':
             send_email(
                 f"{symbol} Signal",
                 f"{latest_signal} {symbol} at ₹{data['Close'].iloc[-1]:.2f}",
                 EMAIL_ADDRESS
             )
-
+        
         prices = [
             {
                 'date': str(index.date()),
@@ -96,7 +97,6 @@ def get_stock_data(symbol):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/portfolio', methods=['GET', 'POST'])
 def portfolio():
@@ -132,12 +132,10 @@ def portfolio():
     finally:
         session.close()
 
-
 @app.route('/')
 @app.route('/<path:path>')
 def serve_react_app(path='index.html'):
     return send_from_directory(app.static_folder, path)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

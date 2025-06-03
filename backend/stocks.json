@@ -1,0 +1,52 @@
+[
+  {
+    "symbol": "IOC",
+    "name": "Indian Oil Corporation",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "TATASTEEL",
+    "name": "Tata Steel",
+    "sector": "Metals"
+  },
+  {
+    "symbol": "IRFC",
+    "name": "Indian Railway Finance Corp",
+    "sector": "Finance"
+  },
+  {
+    "symbol": "GAIL",
+    "name": "GAIL India",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "PNB",
+    "name": "Punjab National Bank",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "HDFCBANK",
+    "name": "HDFC Bank",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "RELIANCE",
+    "name": "Reliance Industries",
+    "sector": "Conglomerate"
+  },
+  {
+    "symbol": "BHARTIARTL",
+    "name": "Bharti Airtel",
+    "sector": "Telecom"
+  },
+  {
+    "symbol": "BAJAJFINSV",
+    "name": "Bajaj Finserv",
+    "sector": "Finance"
+  },
+  {
+    "symbol": "TATAMOTORS",
+    "name": "Tata Motors",
+    "sector": "Automotive"
+  }
+]
