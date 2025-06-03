@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, TimeScale, Title, Tooltip, Legend } from 'chart.js';
-import 'chartjs-adapter-date-fns';
+import 'chartjs-adapter-date-fns'; // For date handling
 
 ChartJS.register(LineElement, PointElement, LinearScale, TimeScale, Title, Tooltip, Legend);
 
@@ -12,7 +12,7 @@ function StockChart() {
   const [signal, setSignal] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/stock/RELIANCE')
+    axios.get('/api/stock/RELIANCE')
       .then(response => {
         setStockData(response.data.prices);
         setCurrentPrice(response.data.current_price);

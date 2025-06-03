@@ -6,7 +6,7 @@ function PortfolioTable() {
   const [currentPrice, setCurrentPrice] = useState(0);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/stock/RELIANCE')
+    axios.get('/api/stock/RELIANCE')
       .then(response => setCurrentPrice(response.data.current_price));
     axios.get('http://localhost:5000/api/portfolio')
       .then(response => setPortfolio(response.data))
