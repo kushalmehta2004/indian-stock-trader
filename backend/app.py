@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_socketio import SocketIO
 import yfinance as yf
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,6 +15,7 @@ from flask_cors import CORS
 import json
 import threading
 import time
+import joblib
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
@@ -49,42 +51,48 @@ def send_email(subject, body, to_email):
     except Exception as e:
         print(f"Email error: {e}")
 
-def calculate_rsi(data, period=14):
+def calculate_technical_indicators(data):
+    data['SMA50'] = data['Close'].rolling(window=50).mean()
+    data['SMA200'] = data['Close'].rolling(window=200).mean()
     delta = data['Close'].diff()
-    gain = delta.where(delta > 0, 0).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    gain = delta.where(delta > 0, 0).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
     rs = gain / loss
     data['RSI'] = 100 - (100 / (1 + rs))
-    return data
-
-def calculate_macd(data):
     exp1 = data['Close'].ewm(span=12, adjust=False).mean()
     exp2 = data['Close'].ewm(span=26, adjust=False).mean()
     data['MACD'] = exp1 - exp2
     data['Signal_Line'] = data['MACD'].ewm(span=9, adjust=False).mean()
+    data['BB_Mid'] = data['Close'].rolling(window=20).mean()
+    data['BB_Std'] = data['Close'].rolling(window=20).std()
+    data['BB_Upper'] = data['BB_Mid'] + 2 * data['BB_Std']
+    data['BB_Lower'] = data['BB_Mid'] - 2 * data['BB_Std']
+    for lag in range(1, 6):
+        data[f'Close_Lag_{lag}'] = data['Close'].shift(lag)
+        data[f'Volume_Lag_{lag}'] = data['Volume'].shift(lag)
+    data['Pct_Change'] = data['Close'].pct_change()
     return data
 
-def calculate_signals(data):
-    data = calculate_rsi(data)
-    data = calculate_macd(data)
-    data['SMA50'] = data['Close'].rolling(window=50).mean()
-    data['SMA200'] = data['Close'].rolling(window=200).mean()
-    data['Signal'] = 0
-    data.loc[
-        (data['SMA50'] > data['SMA200']) &
-        (data['RSI'] < 50) &
-        (data['MACD'] > data['Signal_Line']),
-        'Signal'
-    ] = 1
-    data.loc[
-        (data['SMA50'] < data['SMA200']) &
-        (data['RSI'] > 50) &
-        (data['MACD'] < data['Signal_Line']),
-        'Signal'
-    ] = -1
-    return data
+def predict_signal(symbol, data):
+    try:
+        model = joblib.load(f'models/{symbol}_model.pkl')
+        features = [
+            'SMA50', 'SMA200', 'RSI', 'MACD', 'Signal_Line', 'BB_Upper', 'BB_Lower',
+            'Close_Lag_1', 'Close_Lag_2', 'Close_Lag_3', 'Close_Lag_4', 'Close_Lag_5',
+            'Volume_Lag_1', 'Volume_Lag_2', 'Volume_Lag_3', 'Volume_Lag_4', 'Volume_Lag_5',
+            'Pct_Change'
+        ]
+        latest_data = data.tail(1)[features]
+        if latest_data.isna().any().any():
+            return 'Hold'  # Fallback if features are missing
+        prediction = model.predict(latest_data)[0]
+        return 'Buy' if prediction == 1 else 'Sell' if prediction == -1 else 'Hold'
+    except Exception as e:
+        print(f"Prediction error for {symbol}: {e}")
+        return 'Hold'
 
-def update_stock_prices():
+def update_stock_data():
+    cache = {}  # Cache for historical data
     while True:
         try:
             with open('stocks.json') as f:
@@ -93,27 +101,47 @@ def update_stock_prices():
                 symbol = stock['symbol']
                 for attempt in range(3):
                     try:
-                        data = yf.Ticker(symbol + ".NS").history(period='1d')
-                        if not data.empty:
-                            current_price = round(data['Close'].iloc[-1], 2)
-                            print(f"Emitting price for {symbol}: ₹{current_price}")
-                            socketio.emit('price_update', {
-                                'symbol': symbol,
-                                'current_price': current_price
-                            }, namespace=None)
-                            break
+                        if symbol not in cache or (datetime.now() - cache[symbol]['timestamp']).seconds > 3600:
+                            # Refresh cache hourly
+                            end_date = datetime.now()
+                            start_date = end_date - timedelta(days=365)
+                            data = yf.Ticker(symbol + ".NS").history(start=start_date, end=end_date)
+                            if data.empty:
+                                print(f"No data for {symbol}")
+                                break
+                            cache[symbol] = {'data': data, 'timestamp': datetime.now()}
                         else:
-                            print(f"No data for {symbol}")
+                            # Fetch latest price
+                            latest = yf.Ticker(symbol + ".NS").history(period='1d')
+                            if not latest.empty:
+                                cache[symbol]['data'] = pd.concat([cache[symbol]['data'], latest]).drop_duplicates()
+                        
+                        data = calculate_technical_indicators(cache[symbol]['data'].copy())
+                        current_price = round(data['Close'].iloc[-1], 2)
+                        signal = predict_signal(symbol, data)
+                        if signal == 'Buy':
+                            send_email(
+                                f"{symbol} Buy Opportunity",
+                                f"Buy {symbol} at ₹{current_price}",
+                                EMAIL_ADDRESS
+                            )
+                        socketio.emit('stock_update', {
+                            'symbol': symbol,
+                            'current_price': current_price,
+                            'signal': signal
+                        }, namespace=None)
+                        print(f"Emitted update for {symbol}: ₹{current_price}, Signal: {signal}")
+                        break
                     except Exception as e:
                         print(f"Error fetching {symbol} (attempt {attempt + 1}): {e}")
                         if attempt < 2:
                             time.sleep(2 ** attempt)
                         else:
                             print(f"Failed to fetch {symbol} after 3 attempts")
-            time.sleep(5)
         except Exception as e:
-            print(f"Price update error: {e}")
+            print(f"Update error: {e}")
             time.sleep(10)
+        time.sleep(5)
 
 @app.route('/api/stocks')
 def get_stock_list():
@@ -134,8 +162,8 @@ def get_stock_data(symbol):
         if data.empty:
             return jsonify({'error': 'No data found for symbol'}), 404
 
-        data = calculate_signals(data)
-        latest_signal = 'Buy' if data['Signal'].iloc[-1] == 1 else 'Sell' if data['Signal'].iloc[-1] == -1 else 'Hold'
+        data = calculate_technical_indicators(data)
+        latest_signal = predict_signal(symbol, data)
         if latest_signal == 'Buy':
             send_email(
                 f"{symbol} Buy Opportunity",
@@ -203,5 +231,5 @@ def serve_react_app(path='index.html'):
     return send_from_directory(app.static_folder, path)
 
 if __name__ == '__main__':
-    threading.Thread(target=update_stock_prices, daemon=True).start()
+    threading.Thread(target=update_stock_data, daemon=True).start()
     socketio.run(app, debug=True)
