@@ -88,6 +88,3 @@ A full-stack application for trading in the Indian stock market (NSE/BSE) with r
 - Social trading features
 - Mobile app development
 
-## License
-
-MIT License - See LICENSE file for details
