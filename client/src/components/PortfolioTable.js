@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { FaInfoCircle } from 'react-icons/fa';
 
 const socket = io('http://localhost:5000', {
   reconnection: true,
@@ -217,21 +218,53 @@ function PortfolioTable({ selectedSymbol, stocks = [], showSummary = false, summ
     return (
       <div className="p-4 border rounded bg-gray-50">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Total Investment</div>
-            <div className="text-2xl font-bold">₹0.00</div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Total Investment
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Total amount invested in all stocks"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹0.00</div>
           </div>
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Current Value</div>
-            <div className="text-2xl font-bold">₹0.00</div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Current Value
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Current market value of all your holdings"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹0.00</div>
           </div>
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Overall P&L</div>
-            <div className="text-2xl font-bold">₹0.00 (0.00%)</div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Overall P&L
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Total profit or loss since purchase"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹0.00 (0.00%)</div>
           </div>
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Today's P&L</div>
-            <div className="text-2xl font-bold">₹0.00 (0.00%)</div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Today's P&L
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Profit or loss for the current trading day"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹0.00 (0.00%)</div>
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-500">
@@ -256,21 +289,62 @@ function PortfolioTable({ selectedSymbol, stocks = [], showSummary = false, summ
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Total Investment</div>
-            <div className="text-2xl font-bold">₹{overallSummary.totalInvestment.toFixed(2)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Total Investment
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Total amount invested in all stocks"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹{overallSummary.totalInvestment.toFixed(2)}</div>
           </div>
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Current Value</div>
-            <div className="text-2xl font-bold">₹{overallSummary.totalCurrentValue.toFixed(2)}</div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Current Value
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Current market value of all your holdings"
+                size={14}
+              />
+            </div>
+            <div className="text-2xl font-bold dark:text-white">₹{overallSummary.totalCurrentValue.toFixed(2)}</div>
           </div>
-          <div className="bg-white p-3 rounded shadow">
-            <div className="text-gray-500">Overall P&L</div>
-            <div className={`text-2xl font-bold ${overallSummary.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Overall P&L
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Total profit or loss since purchase"
+                size={14}
+              />
+            </div>
+            <div className={`text-2xl font-bold ${overallSummary.totalPnL >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
               {overallSummary.totalPnL >= 0 ? '+' : ''}₹{overallSummary.totalPnL.toFixed(2)} 
               <span className="text-lg ml-1">
                 ({overallSummary.pnlPercentage >= 0 ? '+' : ''}{overallSummary.pnlPercentage.toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-3 rounded shadow">
+            <div className="text-gray-500 dark:text-gray-400 flex items-center">
+              Today's P&L
+              <FaInfoCircle 
+                className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Profit or loss for the current trading day"
+                size={14}
+              />
+            </div>
+            <div className={`text-2xl font-bold ${overallSummary.dailyPnL >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+              {overallSummary.dailyPnL >= 0 ? '+' : ''}₹{overallSummary.dailyPnL.toFixed(2)} 
+              <span className="text-lg ml-1">
+                ({overallSummary.dailyPnLPercentage >= 0 ? '+' : ''}{overallSummary.dailyPnLPercentage.toFixed(2)}%)
               </span>
             </div>
           </div>

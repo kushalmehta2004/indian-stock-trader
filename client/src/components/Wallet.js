@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { FaInfoCircle } from 'react-icons/fa';
 
 const socket = io('http://localhost:5000', {
   reconnection: true,
@@ -183,8 +184,15 @@ function Wallet({ onBalanceChange }) {
   };
 
   return (
-    <div className="border rounded p-4 bg-white shadow-md">
-      <h2 className="text-xl font-bold mb-4">Trading Wallet</h2>
+    <div className="border rounded p-4 bg-white shadow-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        Trading Wallet
+        <FaInfoCircle 
+          className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors dark:text-gray-400" 
+          data-tooltip-id="info-tooltip" 
+          data-tooltip-content="Your virtual wallet for trading. Deposit and withdraw funds to manage your trading capital."
+        />
+      </h2>
       
       {loading ? (
         <div className="text-center p-4">Loading wallet data...</div>
@@ -200,15 +208,29 @@ function Wallet({ onBalanceChange }) {
         </div>
       ) : (
         <>
-          <div className="mb-4 p-4 bg-gray-50 rounded">
-            <div className="text-lg text-gray-600">Available Balance</div>
-            <div className="text-3xl font-bold">₹{balance.toFixed(2)}</div>
+          <div className="mb-4 p-4 bg-gray-50 rounded dark:bg-gray-700">
+            <div className="text-lg text-gray-600 dark:text-gray-300 flex items-center">
+              Available Balance
+              <FaInfoCircle 
+                className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors dark:text-gray-400" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="Current funds available for trading activities"
+              />
+            </div>
+            <div className="text-3xl font-bold dark:text-white">₹{balance.toFixed(2)}</div>
           </div>
           
           <form className="mb-4">
             <div className="flex flex-wrap items-end">
               <div className="mr-4 mb-2 flex-grow">
-                <label htmlFor="amount" className="block text-sm font-medium mb-1">Amount (₹)</label>
+                <label htmlFor="amount" className="block text-sm font-medium mb-1 flex items-center">
+                  Amount (₹)
+                  <FaInfoCircle 
+                    className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors dark:text-gray-400" 
+                    data-tooltip-id="info-tooltip" 
+                    data-tooltip-content="Enter the amount to deposit or withdraw from your wallet"
+                  />
+                </label>
                 <input
                   id="amount"
                   type="number"
@@ -217,7 +239,7 @@ function Wallet({ onBalanceChange }) {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="border p-2 w-full rounded"
+                  className="border p-2 w-full rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   required
                 />
               </div>
@@ -225,14 +247,18 @@ function Wallet({ onBalanceChange }) {
               <div className="flex mb-2">
                 <button 
                   onClick={handleDeposit}
-                  className="bg-green-500 hover:bg-green-600 text-white p-2 rounded mr-2"
+                  className="bg-green-500 hover:bg-green-600 text-white p-2 rounded mr-2 flex items-center"
+                  data-tooltip-id="info-tooltip"
+                  data-tooltip-content="Add funds to your wallet"
                 >
                   Deposit
                 </button>
                 <button 
                   onClick={handleWithdrawal}
-                  className="bg-red-500 hover:bg-red-600 text-white p-2 rounded"
+                  className="bg-red-500 hover:bg-red-600 text-white p-2 rounded flex items-center"
                   disabled={balance <= 0}
+                  data-tooltip-id="info-tooltip"
+                  data-tooltip-content="Remove funds from your wallet"
                 >
                   Withdraw
                 </button>
@@ -243,9 +269,14 @@ function Wallet({ onBalanceChange }) {
           <div className="mt-4">
             <button 
               onClick={() => setShowTransactions(!showTransactions)}
-              className="text-blue-500 hover:text-blue-700 text-sm"
+              className="text-blue-500 hover:text-blue-700 text-sm dark:text-blue-400 dark:hover:text-blue-300 flex items-center"
             >
               {showTransactions ? 'Hide Transaction History' : 'Show Transaction History'}
+              <FaInfoCircle 
+                className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors dark:text-gray-400" 
+                data-tooltip-id="info-tooltip" 
+                data-tooltip-content="View all past transactions including deposits, withdrawals, and trades"
+              />
             </button>
             
             {showTransactions && (
@@ -255,11 +286,11 @@ function Wallet({ onBalanceChange }) {
                 {transactionsLoading ? (
                   <div className="text-center p-2">Loading transactions...</div>
                 ) : transactions.length === 0 ? (
-                  <div className="text-center p-2 text-gray-500">No transactions found</div>
+                  <div className="text-center p-2 text-gray-500 dark:text-gray-400">No transactions found</div>
                 ) : (
                   <div className="max-h-60 overflow-y-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-100">
+                      <thead className="bg-gray-100 dark:bg-gray-700">
                         <tr>
                           <th className="p-2 text-left">Date</th>
                           <th className="p-2 text-left">Type</th>
@@ -267,17 +298,17 @@ function Wallet({ onBalanceChange }) {
                           <th className="p-2 text-left">Details</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="dark:text-white">
                         {transactions.map(transaction => (
-                          <tr key={transaction.transaction_id} className="border-b">
+                          <tr key={transaction.transaction_id} className="border-b dark:border-gray-700">
                             <td className="p-2">{formatDate(transaction.timestamp)}</td>
                             <td className={`p-2 font-medium ${getTransactionTypeColor(transaction.type)}`}>
                               {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                             </td>
                             <td className={`p-2 text-right font-medium ${
                               transaction.type === 'deposit' || transaction.type === 'sell' 
-                                ? 'text-green-600' 
-                                : 'text-red-600'
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
                             }`}>
                               {transaction.type === 'deposit' || transaction.type === 'sell' ? '+' : '-'}
                               ₹{transaction.amount.toFixed(2)}

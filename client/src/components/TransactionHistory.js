@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { FaInfoCircle } from 'react-icons/fa';
 
 const socket = io('http://localhost:5000', {
   reconnection: true,
@@ -97,17 +98,26 @@ function TransactionHistory() {
   }, {});
 
   return (
-    <div className="border rounded p-4 bg-white shadow-md">
+    <div className="border rounded p-4 bg-white shadow-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Transaction History</h2>
+        <h2 className="text-xl font-bold flex items-center">
+          Transaction History
+          <FaInfoCircle 
+            className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors dark:text-gray-400" 
+            data-tooltip-id="info-tooltip" 
+            data-tooltip-content="Complete history of all deposits, withdrawals, and stock trades"
+          />
+        </h2>
         <div className="flex">
           <button
             onClick={() => setFilter('all')}
             className={`px-3 py-1 rounded-l ${
               filter === 'all' 
                 ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
             }`}
+            data-tooltip-id="info-tooltip" 
+            data-tooltip-content="Show all transactions"
           >
             All
           </button>
@@ -116,8 +126,10 @@ function TransactionHistory() {
             className={`px-3 py-1 ${
               filter === 'manual' 
                 ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
             }`}
+            data-tooltip-id="info-tooltip" 
+            data-tooltip-content="Show only manually executed transactions"
           >
             Manual
           </button>
@@ -126,8 +138,10 @@ function TransactionHistory() {
             className={`px-3 py-1 rounded-r ${
               filter === 'bot' 
                 ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
             }`}
+            data-tooltip-id="info-tooltip" 
+            data-tooltip-content="Show only bot-executed transactions"
           >
             Bot
           </button>
@@ -154,13 +168,53 @@ function TransactionHistory() {
             <div key={date} className="mb-4">
               <h3 className="text-sm font-semibold bg-gray-100 p-2 sticky top-0">{date}</h3>
               <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="p-2 text-left">S.No</th>
-                    <th className="p-2 text-left">Time</th>
-                    <th className="p-2 text-left">Type</th>
-                    <th className="p-2 text-right">Amount</th>
-                    <th className="p-2 text-left">Details</th>
+                    <th className="p-2 text-left">
+                      S.No
+                      <FaInfoCircle 
+                        className="ml-1 inline text-gray-400 dark:text-gray-500 cursor-help" 
+                        data-tooltip-id="info-tooltip" 
+                        data-tooltip-content="Serial number for transactions on this date"
+                        size={12}
+                      />
+                    </th>
+                    <th className="p-2 text-left">
+                      Time
+                      <FaInfoCircle 
+                        className="ml-1 inline text-gray-400 dark:text-gray-500 cursor-help" 
+                        data-tooltip-id="info-tooltip" 
+                        data-tooltip-content="Time when the transaction was executed"
+                        size={12}
+                      />
+                    </th>
+                    <th className="p-2 text-left">
+                      Type
+                      <FaInfoCircle 
+                        className="ml-1 inline text-gray-400 dark:text-gray-500 cursor-help" 
+                        data-tooltip-id="info-tooltip" 
+                        data-tooltip-content="Transaction type: deposit, withdrawal, buy, or sell"
+                        size={12}
+                      />
+                    </th>
+                    <th className="p-2 text-right">
+                      Amount
+                      <FaInfoCircle 
+                        className="ml-1 inline text-gray-400 dark:text-gray-500 cursor-help" 
+                        data-tooltip-id="info-tooltip" 
+                        data-tooltip-content="Amount in rupees involved in the transaction"
+                        size={12}
+                      />
+                    </th>
+                    <th className="p-2 text-left">
+                      Details
+                      <FaInfoCircle 
+                        className="ml-1 inline text-gray-400 dark:text-gray-500 cursor-help" 
+                        data-tooltip-id="info-tooltip" 
+                        data-tooltip-content="Additional information about the transaction"
+                        size={12}
+                      />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

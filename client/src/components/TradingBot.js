@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import io from 'socket.io-client';
+import { FaInfoCircle } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip';
 
 const socket = io('http://localhost:5000', {
   reconnection: true,
@@ -235,10 +237,11 @@ function TradingBot() {
   };
 
   return (
-    <div className="border rounded p-4 bg-white shadow-md">
+    <div className="border rounded p-4 bg-white dark:bg-gray-800 shadow-md">
+      <Tooltip id="bot-tooltip" />
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">AI Trading Bot</h2>
-        <div className="flex items-center">
+        <h2 className="text-xl font-bold dark:text-white">AI Trading Bot</h2>
+        <div className="flex items-center dark:text-white">
           <span className={`inline-block w-3 h-3 rounded-full mr-2 ${settings.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
           <span>{settings.is_active ? 'Active' : 'Inactive'}</span>
         </div>
@@ -282,8 +285,14 @@ function TradingBot() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 dark:text-white flex items-center">
                   Max Investment Per Trade (₹)
+                  <FaInfoCircle 
+                    className="ml-1 text-gray-400 dark:text-gray-500 cursor-help" 
+                    data-tooltip-id="bot-tooltip" 
+                    data-tooltip-content="Maximum amount the bot will invest in a single trade"
+                    size={14}
+                  />
                 </label>
                 <input
                   type="number"
@@ -292,10 +301,10 @@ function TradingBot() {
                   onChange={handleInputChange}
                   min="100"
                   step="100"
-                  className="border p-2 w-full rounded"
+                  className="border p-2 w-full rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Maximum amount to invest in a single trade
                 </p>
               </div>
@@ -367,7 +376,7 @@ function TradingBot() {
                   value={settings.max_open_positions}
                   onChange={handleInputChange}
                   min="1"
-                  max="10"
+                  max="30"
                   className="border p-2 w-full rounded"
                   required
                 />

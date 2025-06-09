@@ -84,7 +84,7 @@ if not trading_bot:
         profit_target_percentage=5.0,
         stop_loss_percentage=3.0,
         max_trades_per_day=5,
-        max_open_positions=20
+        max_open_positions=30
     )
     session.add(trading_bot)
     session.commit()
@@ -225,19 +225,69 @@ def predict_signal(symbol, data):
     try:
         # Try to use the pre-trained model if available
         try:
-            model = joblib.load(f'models/{symbol}_model.pkl')
-            features = [
-                'SMA50', 'SMA200', 'RSI', 'MACD', 'Signal_Line', 'BB_Upper', 'BB_Lower',
-                'Close_Lag_1', 'Close_Lag_2', 'Close_Lag_3', 'Close_Lag_4', 'Close_Lag_5',
-                'Volume_Lag_1', 'Volume_Lag_2', 'Volume_Lag_3', 'Volume_Lag_4', 'Volume_Lag_5',
-                'Pct_Change'
-            ]
+            model_data = joblib.load(f'models/{symbol}_model.pkl')
+            
+            # Handle both old model format (direct model) and new format (dict with model and features)
+            if isinstance(model_data, dict) and 'model' in model_data:
+                model = model_data['model']
+                features = model_data['features']
+                print(f"Using new model format for {symbol} (type: {model_data.get('model_type', 'Unknown')})")
+            else:
+                model = model_data
+                features = [
+                    'SMA50', 'SMA200', 'RSI', 'MACD', 'Signal_Line', 'BB_Upper', 'BB_Lower',
+                    'Close_Lag_1', 'Close_Lag_2', 'Close_Lag_3', 'Close_Lag_4', 'Close_Lag_5',
+                    'Volume_Lag_1', 'Volume_Lag_2', 'Volume_Lag_3', 'Volume_Lag_4', 'Volume_Lag_5',
+                    'Pct_Change'
+                ]
+                print(f"Using original model format for {symbol}")
+            
+            # Ensure all required features exist in the data
+            for feature in features:
+                if feature not in data.columns:
+                    print(f"Warning: Feature {feature} not found in data for {symbol}, calculating it")
+                    # Calculate missing features on-the-fly if possible
+                    if feature == 'SMA5':
+                        data['SMA5'] = data['Close'].rolling(window=5).mean()
+                    elif feature == 'SMA20':
+                        data['SMA20'] = data['Close'].rolling(window=20).mean()
+                    elif feature == 'MACD_Hist':
+                        if 'MACD' in data.columns and 'Signal_Line' in data.columns:
+                            data['MACD_Hist'] = data['MACD'] - data['Signal_Line']
+                    elif feature == 'BB_Width':
+                        if 'BB_Upper' in data.columns and 'BB_Lower' in data.columns and 'BB_Mid' in data.columns:
+                            data['BB_Width'] = (data['BB_Upper'] - data['BB_Lower']) / data['BB_Mid']
+                    elif feature.startswith('Close_Change_'):
+                        lag = int(feature.split('_')[-1])
+                        lag_col = f'Close_Lag_{lag}'
+                        if lag_col in data.columns:
+                            data[feature] = data['Close'] / data[lag_col] - 1
+                    elif feature == 'Volatility_20':
+                        data['Volatility_20'] = data['Pct_Change'].rolling(window=20).std()
+                    elif feature == '%K':
+                        data['Lowest_14'] = data['Low'].rolling(window=14).min()
+                        data['Highest_14'] = data['High'].rolling(window=14).max()
+                        data['%K'] = 100 * ((data['Close'] - data['Lowest_14']) / 
+                                        (data['Highest_14'] - data['Lowest_14']))
+                    elif feature == '%D':
+                        if '%K' in data.columns:
+                            data['%D'] = data['%K'].rolling(window=3).mean()
+                    elif feature == 'ROC_5':
+                        data['ROC_5'] = data['Close'].pct_change(periods=5)
+                    elif feature == 'ROC_20':
+                        data['ROC_20'] = data['Close'].pct_change(periods=20)
+                    elif feature == 'Volume_Ratio':
+                        data['Volume_Ratio'] = data['Volume'] / data['Volume'].rolling(window=20).mean()
+            
+            # Get the latest data with required features
             latest_data = data.tail(1)[features]
+            
             if not latest_data.isna().any().any():
                 prediction = model.predict(latest_data)[0]
                 model_signal = 'Buy' if prediction == 1 else 'Sell' if prediction == -1 else 'Hold'
                 print(f"Model prediction for {symbol}: {model_signal}")
             else:
+                print(f"Warning: NaN values in latest data for {symbol}, defaulting to Hold")
                 model_signal = 'Hold'
         except Exception as model_error:
             print(f"Model error for {symbol}, using advanced rule-based system: {model_error}")

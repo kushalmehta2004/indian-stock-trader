@@ -48,5 +48,155 @@
     "symbol": "TATAMOTORS",
     "name": "Tata Motors",
     "sector": "Automotive"
+  },
+  {
+    "symbol": "INFY",
+    "name": "Infosys",
+    "sector": "IT"
+  },
+  {
+    "symbol": "TCS",
+    "name": "Tata Consultancy Services",
+    "sector": "IT"
+  },
+  {
+    "symbol": "WIPRO",
+    "name": "Wipro",
+    "sector": "IT"
+  },
+  {
+    "symbol": "HCLTECH",
+    "name": "HCL Technologies",
+    "sector": "IT"
+  },
+  {
+    "symbol": "TECHM",
+    "name": "Tech Mahindra",
+    "sector": "IT"
+  },
+  {
+    "symbol": "ICICIBANK",
+    "name": "ICICI Bank",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "SBIN",
+    "name": "State Bank of India",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "KOTAKBANK",
+    "name": "Kotak Mahindra Bank",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "AXISBANK",
+    "name": "Axis Bank",
+    "sector": "Banking"
+  },
+  {
+    "symbol": "HINDUNILVR",
+    "name": "Hindustan Unilever",
+    "sector": "FMCG"
+  },
+  {
+    "symbol": "ITC",
+    "name": "ITC Limited",
+    "sector": "FMCG"
+  },
+  {
+    "symbol": "NESTLEIND",
+    "name": "Nestle India",
+    "sector": "FMCG"
+  },
+  {
+    "symbol": "BRITANNIA",
+    "name": "Britannia Industries",
+    "sector": "FMCG"
+  },
+  {
+    "symbol": "MARUTI",
+    "name": "Maruti Suzuki India",
+    "sector": "Automotive"
+  },
+  {
+    "symbol": "M&M",
+    "name": "Mahindra & Mahindra",
+    "sector": "Automotive"
+  },
+  {
+    "symbol": "BAJAJ-AUTO",
+    "name": "Bajaj Auto",
+    "sector": "Automotive"
+  },
+  {
+    "symbol": "HEROMOTOCO",
+    "name": "Hero MotoCorp",
+    "sector": "Automotive"
+  },
+  {
+    "symbol": "SUNPHARMA",
+    "name": "Sun Pharmaceutical",
+    "sector": "Pharma"
+  },
+  {
+    "symbol": "DRREDDY",
+    "name": "Dr. Reddy's Laboratories",
+    "sector": "Pharma"
+  },
+  {
+    "symbol": "CIPLA",
+    "name": "Cipla",
+    "sector": "Pharma"
+  },
+  {
+    "symbol": "DIVISLAB",
+    "name": "Divi's Laboratories",
+    "sector": "Pharma"
+  },
+  {
+    "symbol": "ADANIENT",
+    "name": "Adani Enterprises",
+    "sector": "Conglomerate"
+  },
+  {
+    "symbol": "ADANIPORTS",
+    "name": "Adani Ports",
+    "sector": "Infrastructure"
+  },
+  {
+    "symbol": "ADANIPOWER",
+    "name": "Adani Power",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "NTPC",
+    "name": "NTPC Limited",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "POWERGRID",
+    "name": "Power Grid Corporation",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "ONGC",
+    "name": "Oil and Natural Gas Corporation",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "BPCL",
+    "name": "Bharat Petroleum",
+    "sector": "Energy"
+  },
+  {
+    "symbol": "HINDALCO",
+    "name": "Hindalco Industries",
+    "sector": "Metals"
+  },
+  {
+    "symbol": "JSWSTEEL",
+    "name": "JSW Steel",
+    "sector": "Metals"
   }
 ]

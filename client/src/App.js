@@ -7,7 +7,24 @@ import PortfolioTable from './components/PortfolioTable';
 import Wallet from './components/Wallet';
 import TradingBot from './components/TradingBot';
 import TransactionHistory from './components/TransactionHistory';
-import { FaSun, FaMoon, FaRobot, FaChartLine, FaWallet, FaHistory, FaBriefcase } from 'react-icons/fa';
+import { FaSun, FaMoon, FaRobot, FaChartLine, FaWallet, FaHistory, FaBriefcase, FaInfoCircle } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip';
+
+// Info icon component for tooltips
+export const InfoIcon = ({ text, id }) => {
+  const uniqueId = id || `info-${Math.random().toString(36).substr(2, 9)}`;
+  return (
+    <>
+      <FaInfoCircle 
+        className="ml-2 text-gray-500 hover:text-blue-500 cursor-help transition-colors" 
+        data-tooltip-id="info-tooltip" 
+        data-tooltip-content={text}
+        data-tooltip-place="top"
+        aria-label={text}
+      />
+    </>
+  );
+};
 
 const socket = io('http://localhost:5000', {
   reconnection: true,
@@ -88,17 +105,41 @@ function App() {
     setSelectedStock(e.target.value);
   };
 
-  // Apply dark mode to the entire app
+  // Apply dark mode to the entire app and save preference
+  useEffect(() => {
+    // Check for saved dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (savedDarkMode !== darkMode) {
+      setDarkMode(savedDarkMode);
+    }
+  }, []);
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    // Save preference
+    localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+      {/* Tooltip component with enhanced styling */}
+      <Tooltip 
+        id="info-tooltip"
+        className="max-w-xs z-50"
+        style={{ 
+          backgroundColor: darkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          color: darkMode ? '#e5e7eb' : '#4b5563',
+          border: darkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+          borderRadius: '0.375rem',
+          padding: '0.5rem 0.75rem',
+          boxShadow: darkMode ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+        }}
+      />
+      
       {/* Sidebar */}
       <div className={`fixed left-0 top-0 h-full w-64 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg transition-all duration-300 z-10`}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -182,6 +223,8 @@ function App() {
             className={`w-full p-2 rounded flex items-center justify-center ${
               darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-200 text-gray-700'
             }`}
+            data-tooltip-id="info-tooltip"
+            data-tooltip-content="Toggle between dark and light mode for better viewing experience"
           >
             {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
             {darkMode ? 'Light Mode' : 'Dark Mode'}
